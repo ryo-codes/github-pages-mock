@@ -4,11 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ page.title | default: site.title }}</title>
-<link rel="stylesheet" href="{{ '/assets/github-markdown.css' | relative_url }}">
+<link rel="stylesheet" href="{{ '/assets/github-markdown.css' | relative_url }}?v=3">
 <style>
   :root { --bg:#fff; --fg:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0969da; --side:260px; }
   html { scroll-padding-top: 56px; color-scheme: light; }
   .markdown-body { color-scheme: light; background:#fff; color:#1f2328; }
+  .markdown-body blockquote { color:#57606a; border-left-color:#d0d7de; }
+  .markdown-body pre, .markdown-body code { background:#f6f8fa; color:#1f2328; }
   body { margin:0; background:var(--bg); color:var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif; }
   .topbar { position: sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:16px; padding:10px 20px; font-size:14px; }
   .topbar a { color:var(--accent); text-decoration:none; }
@@ -29,8 +31,10 @@
   .tablewrap th, .tablewrap td { border:0; border-bottom:1px solid var(--line); border-right:1px solid #eaeef2; padding:7px 10px; vertical-align:top; }
   .tablewrap th { position:sticky; top:0; z-index:3; background:#f6f8fa; white-space:nowrap; text-align:left; }
   .tablewrap td { min-width:5.5em; max-width:28em; }
-  .tablewrap tbody tr:nth-child(even) td { background:#fafbfc; }
-  .tablewrap tbody tr:hover td { background:#fff8e1; }
+  .markdown-body .tablewrap table tr, .markdown-body .tablewrap table td { background:#fff; color:#1f2328; }
+  .markdown-body .tablewrap table th { background:#f6f8fa; color:#1f2328; }
+  .markdown-body .tablewrap tbody tr:nth-child(even) td { background:#fafbfc; }
+  .markdown-body .tablewrap tbody tr:hover td { background:#fff8e1; }
   .tablewrap.wide table { min-width:100%; }
   .tablewrap.wide th:first-child, .tablewrap.wide td:first-child { position:sticky; left:0; z-index:2; background:#fff; box-shadow: 2px 0 0 #eaeef2; }
   .tablewrap.wide th:first-child { z-index:4; background:#f6f8fa; }
@@ -46,7 +50,7 @@
   .figtools button { font-size:12px; padding:2px 8px; border:1px solid var(--line); background:#fff; border-radius:6px; cursor:pointer; }
   .mermaid svg { transform-origin: top left; }
   #totop { position:fixed; right:24px; bottom:24px; z-index:30; font-size:12px; padding:6px 10px; border:1px solid var(--line); background:#fff; border-radius:999px; cursor:pointer; box-shadow:0 1px 4px rgba(0,0,0,.08); display:none; }
-  .mermaid { background:#fafbfc; border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; }
+  .markdown-body pre.mermaid { background:#fafbfc; color:#1f2328; border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; }
   @media (max-width: 900px) { .page { grid-template-columns: 1fr; } nav.toc { display:none; } main { padding:16px; } }
   @media print { .topbar, nav.toc, .tabletools { display:none; } .page { display:block; } .tablewrap { max-height:none; overflow:visible; border:0; } .tablewrap th { position:static; } }
 </style>
@@ -56,7 +60,6 @@
   <a href="{{ '/' | relative_url }}">設計書一覧</a>
   <span>›</span>
   <span class="title">{{ page.title }}</span>
-  <span class="meta">{% if page.version %}版 {{ page.version }}{% endif %}{% if page.updated %}　更新 {{ page.updated }}{% endif %}</span>
 </div>
 <div class="page">
   <nav class="toc" id="toc"><div class="toc-head">目次</div></nav>
@@ -64,7 +67,7 @@
 {{ content }}
   </article></main>
 </div>
-<script src="{{ '/assets/mermaid.min.js' | relative_url }}"></script>
+<script src="{{ '/assets/mermaid.min.js' | relative_url }}?v=3"></script>
 <script>
 (function () {
   var content = document.getElementById('content');
