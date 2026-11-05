@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ page.title | default: site.title }}</title>
+<link rel="stylesheet" href="{{ '/assets/github-markdown.css' | relative_url }}">
+<style>
+  :root { --bg:#fff; --fg:#1f2328; --muted:#57606a; --line:#d0d7de; --accent:#0969da; --side:260px; }
+  html { scroll-padding-top: 56px; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", Meiryo, sans-serif; }
+  .topbar { position: sticky; top:0; z-index:20; background:#fff; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:16px; padding:10px 20px; font-size:14px; }
+  .topbar a { color:var(--accent); text-decoration:none; }
+  .topbar .title { font-weight:600; color:var(--fg); }
+  .topbar .meta { color:var(--muted); margin-left:auto; white-space:nowrap; }
+  .page { display:grid; grid-template-columns: var(--side) minmax(0,1fr); gap:0; }
+  nav.toc { position: sticky; top:45px; align-self:start; height: calc(100vh - 45px); overflow:auto; border-right:1px solid var(--line); padding:16px 12px; font-size:13px; }
+  nav.toc .toc-head { font-weight:600; color:var(--muted); margin:0 0 8px 6px; font-size:12px; }
+  nav.toc a { display:block; color:var(--fg); text-decoration:none; padding:4px 8px; border-radius:6px; }
+  nav.toc a.l3 { padding-left:22px; color:var(--muted); }
+  nav.toc a:hover, nav.toc a.active { background:#f3f4f6; color:var(--accent); }
+  main { padding: 20px 40px 80px; min-width:0; }
+  .markdown-body { max-width: 1400px; font-size:15px; }
+  .markdown-body h2 { margin-top:32px; }
+  /* 表：ラッパで横スクロール、見出し行と先頭列を固定、縞模様 */
+  .tablewrap { position:relative; overflow:auto; max-height:78vh; border:1px solid var(--line); border-radius:8px; margin:12px 0 20px; }
+  .tablewrap table { display:table; width:max-content; max-width:100%; margin:0; border-collapse:separate; border-spacing:0; font-size:13.5px; }
+  .tablewrap th, .tablewrap td { border:0; border-bottom:1px solid var(--line); border-right:1px solid #eaeef2; padding:7px 10px; vertical-align:top; }
+  .tablewrap th { position:sticky; top:0; z-index:3; background:#f6f8fa; white-space:nowrap; text-align:left; }
+  .tablewrap td { min-width:5.5em; max-width:28em; }
+  .tablewrap tbody tr:nth-child(even) td { background:#fafbfc; }
+  .tablewrap tbody tr:hover td { background:#fff8e1; }
+  .tablewrap.wide table { min-width:100%; }
+  .tablewrap.wide th:first-child, .tablewrap.wide td:first-child { position:sticky; left:0; z-index:2; background:#fff; box-shadow: 2px 0 0 #eaeef2; }
+  .tablewrap.wide th:first-child { z-index:4; background:#f6f8fa; }
+  .tablewrap.wide tbody tr:nth-child(even) td:first-child { background:#fafbfc; }
+  .tablewrap.wide tbody tr:hover td:first-child { background:#fff8e1; }
+  .tablewrap.expanded { max-height:none; }
+  .tabletools { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--muted); margin-top:14px; }
+  .tabletools button { font-size:12px; padding:3px 10px; border:1px solid var(--line); background:#fff; border-radius:6px; cursor:pointer; }
+  .tabletools button:hover { background:#f3f4f6; }
+  .mermaid { background:#fafbfc; border:1px solid var(--line); border-radius:8px; padding:12px; overflow:auto; }
+  @media (max-width: 900px) { .page { grid-template-columns: 1fr; } nav.toc { display:none; } main { padding:16px; } }
+  @media print { .topbar, nav.toc, .tabletools { display:none; } .page { display:block; } .tablewrap { max-height:none; overflow:visible; border:0; } .tablewrap th { position:static; } }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <a href="{{ '/' | relative_url }}">設計書一覧</a>
+  <span>›</span>
+  <span class="title">{{ page.title }}</span>
+  <span class="meta">{% if page.version %}版 {{ page.version }}{% endif %}{% if page.updated %}　更新 {{ page.updated }}{% endif %}</span>
+</div>
+<div class="page">
+  <nav class="toc" id="toc"><div class="toc-head">目次</div></nav>
+  <main><article class="markdown-body" id="content">
+{{ content }}
+  </article></main>
+</div>
+<script src="{{ '/assets/mermaid.min.js' | relative_url }}"></script>
+<script>
+(function () {
+  var content = document.getElementById('content');
+
+  // 1) 見出しに id を付け、目次を作る
+  var toc = document.getElementById('toc');
+  var heads = content.querySelectorAll('h2, h3');
+  var used = {};
+  heads.forEach(function (h) {
+    if (!h.id) {
+      var base = h.textContent.trim().replace(/\s+/g, '-');
+      var id = base, n = 2;
+      while (used[id] || document.getElementById(id)) { id = base + '-' + (n++); }
+      h.id = id;
+    }
+    used[h.id] = true;
+    var a = document.createElement('a');
+    a.href = '#' + h.id; a.textContent = h.textContent; a.className = h.tagName === 'H3' ? 'l3' : 'l2';
+    toc.appendChild(a);
+  });
+  // 現在位置のハイライト
+  var links = toc.querySelectorAll('a');
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        links.forEach(function (l) { l.classList.toggle('active', l.getAttribute('href') === '#' + e.target.id); });
+      }
+    });
+  }, { rootMargin: '-56px 0px -70% 0px' });
+  heads.forEach(function (h) { io.observe(h); });
+
+  // 2) 表をラッパで包む：横スクロール、見出し行固定、列が多い表は先頭列も固定、「表を広げる」ボタン
+  content.querySelectorAll('table').forEach(function (t) {
+    var wrap = document.createElement('div');
+    wrap.className = 'tablewrap';
+    var cols = t.querySelectorAll('thead th').length || (t.rows[0] ? t.rows[0].cells.length : 0);
+    if (cols >= 8) wrap.classList.add('wide');
+    t.parentNode.insertBefore(wrap, t);
+    wrap.appendChild(t);
+    var rows = t.tBodies[0] ? t.tBodies[0].rows.length : 0;
+    var tools = document.createElement('div');
+    tools.className = 'tabletools';
+    tools.innerHTML = '<span>' + cols + ' 列 × ' + rows + ' 行' + (cols >= 8 ? '　横にスクロールできます（先頭列と見出し行は固定）' : '') + '</span>';
+    if (rows > 15) {
+      var btn = document.createElement('button');
+      btn.textContent = '表を全て表示';
+      btn.onclick = function () {
+        wrap.classList.toggle('expanded');
+        btn.textContent = wrap.classList.contains('expanded') ? '表を縮める' : '表を全て表示';
+      };
+      tools.appendChild(btn);
+    }
+    wrap.parentNode.insertBefore(tools, wrap);
+  });
+
+  // 3) Mermaid：```mermaid を図にする
+  document.querySelectorAll('pre > code.language-mermaid').forEach(function (code) {
+    var pre = document.createElement('pre');
+    pre.className = 'mermaid';
+    pre.textContent = code.textContent;
+    code.parentElement.replaceWith(pre);
+  });
+  if (window.mermaid) { mermaid.initialize({ startOnLoad: false, theme: 'default' }); mermaid.run(); }
+})();
+</script>
+</body>
+</html>

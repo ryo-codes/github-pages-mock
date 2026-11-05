@@ -1,0 +1,7 @@
+title: 設計書レビュー（GitHub Pages 試行・ダミー）
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+exclude:
+  - README.md
